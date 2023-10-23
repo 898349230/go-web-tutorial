@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -25,6 +26,43 @@ func (handler *aboutHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func welcome(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(" welcome ...."))
+}
+
+func writeExample(w http.ResponseWriter, r *http.Request) {
+	str := `<html> 
+	<head><title>Go Web</title></head>
+	<body><h1>Hello World</h1></body>
+	</html>`
+	w.Write([]byte(str))
+}
+
+func writeHeader(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(501)
+	str := `<html> 
+	<head><title>5501</title></head>
+	<body><h1>Hello World</h1></body>
+	</html>`
+	w.Write([]byte(str))
+}
+
+func redirectHand(w http.ResponseWriter, r *http.Request) {
+	// 需要再设置 WriteHeader 前设置 Location，调用完 WriteHeader 后无法设置header
+	w.Header().Set("Location", "https://www.bilibili.com/")
+	w.WriteHeader(302)
+}
+func jsonHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-type", "application/json")
+	post := &Post{
+		User:  "张三",
+		Title: "心情号",
+	}
+	json, _ := json.Marshal(post)
+	w.Write(json)
+}
+
+type Post struct {
+	User  string
+	Title string
 }
 
 func main() {
@@ -139,6 +177,20 @@ func main() {
 
 	})
 
+	// http://localhost:8080/writeHeader
+	http.HandleFunc("/write", writeExample)
+	// http://localhost:8080/writeHeader
+	http.HandleFunc("/writeHeader", writeHeader)
+	// http://localhost:8080/redirect
+	http.HandleFunc("/redirect", redirectHand)
+	// http://localhost:8080/json
+	http.HandleFunc("/json", jsonHandler)
+
+	// 内置的 Response
+	// NotFound 函数，包装一个404状态码和一个额外的信息
+	// ServeFile 函数，从文件系统提供文件，返回给请求者
+	// ServeContent 函数，可以把io.ReadSeeker接口的任何东西里面的内容返回给请求者
+	// Redirect 函数，告诉客户端重定向到另一个URL
 	server.ListenAndServe()
 
 }
