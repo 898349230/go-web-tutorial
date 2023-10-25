@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
+	"text/template"
 	"time"
 )
 
@@ -191,6 +193,70 @@ func main() {
 	// ServeFile 函数，从文件系统提供文件，返回给请求者
 	// ServeContent 函数，可以把io.ReadSeeker接口的任何东西里面的内容返回给请求者
 	// Redirect 函数，告诉客户端重定向到另一个URL
+
+	// 解析模版
+	// http://localhost:8080/process
+	http.HandleFunc("/process", process)
+	// http://localhost:8080/process2
+	http.HandleFunc("/process2", process2)
+	// http://localhost:8080/process3
+	http.HandleFunc("/process3", process3)
+	// http://localhost:8080/processMethod
+	http.HandleFunc("/processMethod", processMethod)
+
 	server.ListenAndServe()
 
+}
+
+// 解析模板
+func process(w http.ResponseWriter, r *http.Request) {
+	// t3, _ := template.ParseGlob("/*")
+
+	// 解析模板
+	t, _ := template.ParseFiles("templ.html")
+	// 执行单个模版
+	t.Execute(w, "Hello World haha ")
+
+	// 解析多个html
+	ts, _ := template.ParseFiles("t1.html", "t2.html")
+	// 执行指定的html
+	ts.ExecuteTemplate(w, "h2.html", "Hello World")
+
+	// 查找指定文件
+	// file := ts.Lookup("h1.html")
+
+}
+
+// 解析模板
+func process2(w http.ResponseWriter, r *http.Request) {
+
+	// 解析模板
+	t, _ := template.ParseFiles("templ2.html")
+	// 执行单个模版
+	rand.Seed(time.Now().Unix())
+	t.Execute(w, rand.Intn(10) > 5)
+}
+
+// 遍历
+func process3(w http.ResponseWriter, r *http.Request) {
+
+	// 解析模板
+	t, _ := template.ParseFiles("templ3.html")
+	dayOfWeek := []string{"Mon", "Tue", "Wed"}
+	t.Execute(w, dayOfWeek)
+}
+
+// 模版自定义函数
+func processMethod(w http.ResponseWriter, r *http.Request) {
+	// 模版函数名称 fdate
+	funcMap := template.FuncMap{"fdate": formateDate}
+	t := template.New("templ4.html").Funcs(funcMap)
+	t.ParseFiles("templ4.html")
+	t.Execute(w, time.Now())
+}
+
+// 时间格式化
+func formateDate(t time.Time) string {
+	layout := "2006-01-02"
+	return t.Format(layout)
 }
