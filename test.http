@@ -11,3 +11,13 @@ Content-Type: application/json
     "name": "zhangsan",
     "age": 22
 } 
+
+### Post test
+POST http://localhost:8080/company HTTP/1.1
+Content-Type: application/json
+
+{
+    "name": "百度",
+    "address": "北京",
+    "id": 3
+} 

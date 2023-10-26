@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"net/http"
 	"text/template"
@@ -65,6 +66,12 @@ func jsonHandler(w http.ResponseWriter, r *http.Request) {
 type Post struct {
 	User  string
 	Title string
+}
+
+type Comapny struct {
+	Id      int64  `json:"id"`
+	Name    string `json:"name"`
+	Address string `json:"address"`
 }
 
 func main() {
@@ -203,6 +210,34 @@ func main() {
 	http.HandleFunc("/process3", process3)
 	// http://localhost:8080/processMethod
 	http.HandleFunc("/processMethod", processMethod)
+
+	// 接收 返回 json
+	http.HandleFunc("/company", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			// json解码器
+			dec := json.NewDecoder(r.Body)
+			company := Comapny{}
+			err := dec.Decode(&company)
+			if err != nil {
+				log.Println(err.Error())
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			fmt.Println(company)
+			// json 编码器
+			enc := json.NewEncoder(w)
+			// 将接收到的数据返回去
+			err = enc.Encode(company)
+			if err != nil {
+				log.Println(err.Error())
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+		default:
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		}
+	})
 
 	server.ListenAndServe()
 
