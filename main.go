@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"text/template"
 	"time"
+
+	"github.com/898349230/go-web-tutorial/middleware"
 )
 
 // 自定义 handler
@@ -90,7 +92,13 @@ func main() {
 	server := http.Server{
 		Addr: "localhost:8080",
 		// Handler: &mh,
-		Handler: nil,
+		// 设置中间件
+		// Handler: new(middleware.AuthMiddleware),
+		// 设置嵌套中间件
+		Handler: &middleware.AuthMiddleware{
+			Next: new(middleware.TimeoutMiddleware),
+		},
+		// Handler: nil,
 		// Handler: http.NotFoundHandler(),
 		// Handler: http.FileServer(http.Dir("wwwroot")),
 
@@ -127,6 +135,8 @@ func main() {
 
 	// 测试 query 参数
 	http.HandleFunc("/get", func(w http.ResponseWriter, r *http.Request) {
+		// sleep 3秒，测试超时中间件
+		time.Sleep(3 * time.Second)
 		query := r.URL.Query()
 		// 返回切片
 		id := query["id"]
@@ -240,6 +250,7 @@ func main() {
 	})
 
 	server.ListenAndServe()
+	// http.ListenAndServe("localhost:8080", new(middleware.AuthMiddleware))
 
 }
 

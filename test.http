@@ -21,3 +21,7 @@ Content-Type: application/json
     "address": "北京",
     "id": 3
 } 
+
+### get  header 带有 Authorization，测试中间件
+http://localhost:8080/get?id=100&name=aaa&id=2
+Authorization: aaa
