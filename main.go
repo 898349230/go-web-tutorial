@@ -10,7 +10,11 @@ import (
 	"text/template"
 	"time"
 
+	// 引入性能分析的包（标准库内的包）
+	_ "net/http/pprof"
+
 	"github.com/898349230/go-web-tutorial/middleware"
+	//  http://localhost:8080/debug/pprof/
 )
 
 // 自定义 handler
@@ -249,9 +253,12 @@ func main() {
 		}
 	})
 
+	// 新开启一个 goroutine 查看性能监控，不受其他handler，中间件影响
+	// 访问  http://localhost:8000/debug/pprof/
+	go http.ListenAndServe("localhost:8000", nil)
+
 	server.ListenAndServe()
 	// http.ListenAndServe("localhost:8080", new(middleware.AuthMiddleware))
-
 }
 
 // 解析模板
